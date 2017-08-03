@@ -1,15 +1,24 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "utility.h"
 
 int main(int argc, char **argv)
 {
+	printf("Enter username: ");
+	char* username = getCommand();
+	username[strlen(username) - 1] = '\0';
+	
+	printf("Enter hostname: ");
+	char* hostname = getCommand();
+	hostname[strlen(hostname) - 1] = '\0';
+	
 	while (1) {
 		
 		int childPid;
 		char *command, *parsedCommand;
 
-		displayPrompt();
+		displayPrompt(username, hostname);
 
 		command = getCommand();
 

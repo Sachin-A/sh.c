@@ -3,11 +3,11 @@
 #include <stdlib.h>
 #include "utility.h"
 
-void displayPrompt(void) {
+void displayPrompt(char* username, char* hostname) {
 	
 	char cwd[1024];
 	getcwd(cwd, sizeof(cwd));
-	printf("user@sh.c:%s ", cwd);
+	printf("%s@%s:%s$ ", username, hostname, cwd);
 
 }
 
