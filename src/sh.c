@@ -16,17 +16,17 @@ int main(int argc, char **argv)
 	while (1) {
 		
 		int childPid;
-		char *command, *parsedCommand;
+		char *command, **parsedCommand;
 
 		displayPrompt(username, hostname);
 
 		command = getCommand();
 
-		printf("%s", command);
+		printf("Command: %s", command);
 		
-		/*parsedCommand = parseCommand(command);
+		parsedCommand = parseCommand(command);
 
-		recordCommand(parsedCommand);
+		/*recordCommand(Command);
 
 		if (checkIfBuiltIn(parsedCommand)) {
 			executeShellBuiltIn(parsedCommand);
