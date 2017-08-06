@@ -6,7 +6,7 @@
 
 #define DELIMITERS " \t\r\n\a"
 
-void displayPrompt(char* username, char* hostname) {
+void displayPrompt(char *username, char *hostname) {
 
 	char cwd[1024];
 	getcwd(cwd, sizeof(cwd));
@@ -14,7 +14,7 @@ void displayPrompt(char* username, char* hostname) {
 
 }
 
-char* getCommand(void) {
+char *getCommand(void) {
 
 	char *line = malloc(100), *currentPtr = line;
 	int c;
@@ -53,7 +53,7 @@ char* getCommand(void) {
 	return line;
 }
 
-char** parseCommand(char* command) {
+char **parseCommand(char *command) {
 
 	size_t bufferSize = 64, unitSize = bufferSize;
 	char **tokens = malloc(bufferSize * sizeof(char*));
@@ -74,8 +74,71 @@ char** parseCommand(char* command) {
 	}
 
 	tokens[tokenNumber] = NULL;
-	for(int i = 0; i <= tokenNumber; i++) {
-		printf("%d: %s\n", i, tokens[i]);
-	}
 	return tokens;
+}
+
+void enqueue(struct Queue *history, char *command) {
+	struct Node* t = (struct Node*)malloc(sizeof(struct Node));
+	t->next = NULL;
+	t->command = malloc(strlen(command) + 1);
+
+	strcpy(t->command, command);
+	t->command[strlen(t->command) - 1] = '\0';
+
+	if(history->rear == NULL) {
+		history->front = history->rear = t;
+		return;
+	}
+
+	history->rear->next = t;
+	history->rear = t;
+	history->size++;
+}
+
+void dequeue(struct Queue *history) {
+	struct Node *t = history->front;
+
+	if(t == NULL) {
+		printf("There is nothing to show in history!\n");
+		return;
+	}
+	else if(t->next != NULL) {
+		t = t->next;
+		free(history->front);
+		history->front = t;
+	}
+	else {
+		free(history->front);
+		history->front = NULL;
+		history->rear = NULL;
+	}
+	history->size--;
+}
+
+void displayHistory(struct Queue *history) {
+
+	struct Node* iterator = history->front;
+	int commandNum = 0;
+
+	printf("History\n");
+
+	if(iterator == NULL && history->rear == NULL) {
+		printf("There is nothing to show in history!");
+		return;
+	}
+	while(iterator != NULL) {
+		printf("[%d]: %s\n", commandNum, iterator->command);
+		iterator = iterator->next;
+		commandNum++;
+	}
+}
+
+void recordHistory(struct Queue *history, char *command) {
+	if(history->size == 100) {
+		dequeue(history);
+		enqueue(history, command);
+	}
+	else {
+		enqueue(history, command);
+	}
 }

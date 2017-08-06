@@ -5,6 +5,9 @@
 
 int main(int argc, char **argv)
 {
+	struct Queue *history = (struct Queue*)malloc(sizeof(struct Queue));
+	history->size = 0;
+
 	printf("Enter username: ");
 	char* username = getCommand();
 	username[strlen(username) - 1] = '\0';
@@ -12,9 +15,9 @@ int main(int argc, char **argv)
 	printf("Enter hostname: ");
 	char* hostname = getCommand();
 	hostname[strlen(hostname) - 1] = '\0';
-	
+
 	while (1) {
-		
+
 		int childPid;
 		char *command, **parsedCommand;
 
@@ -22,13 +25,13 @@ int main(int argc, char **argv)
 
 		command = getCommand();
 
-		printf("Command: %s", command);
-		
+		recordHistory(history, command);
+
+		displayHistory(history);
+
 		parsedCommand = parseCommand(command);
 
-		/*recordCommand(Command);
-
-		if (checkIfBuiltIn(parsedCommand)) {
+		/*if (checkIfBuiltIn(parsedCommand)) {
 			executeShellBuiltIn(parsedCommand);
 		} else {
 			childPid = fork();
