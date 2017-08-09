@@ -2,9 +2,18 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include "utility.h"
 
 #define DELIMITERS " \t\r\n\a"
+
+char *shellBuiltInFunctions[] = {
+	"history"
+};
+
+int (*shellBuiltIns[])(char**) = {
+	displayHistory
+};
 
 void displayPrompt(char *username, char *hostname) {
 
@@ -115,7 +124,7 @@ void dequeue(struct Queue *history) {
 	history->size--;
 }
 
-void displayHistory(struct Queue *history) {
+int displayHistory(char** parseCommand) {
 
 	struct Node* iterator = history->front;
 	int commandNum = 0;
@@ -124,21 +133,31 @@ void displayHistory(struct Queue *history) {
 
 	if(iterator == NULL && history->rear == NULL) {
 		printf("There is nothing to show in history!");
-		return;
+		return EXIT_FAILURE;
 	}
 	while(iterator != NULL) {
 		printf("[%d]: %s\n", commandNum, iterator->command);
 		iterator = iterator->next;
 		commandNum++;
 	}
+	return EXIT_SUCCESS;
 }
 
 void recordHistory(struct Queue *history, char *command) {
-	if(history->size == 100) {
+	if(history->size == 5) {
 		dequeue(history);
 		enqueue(history, command);
 	}
 	else {
 		enqueue(history, command);
 	}
+}
+
+int checkIfShellBuiltIn(char* cmd) {
+	for(int i = 0; i < (sizeof(shellBuiltInFunctions)/sizeof(char*)); i++) {
+		if(strcmp(shellBuiltInFunctions[i], cmd) == 0) {
+			return i;
+		}
+	}
+	return -1;
 }

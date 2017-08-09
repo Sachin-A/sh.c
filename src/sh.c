@@ -3,10 +3,15 @@
 #include <string.h>
 #include "utility.h"
 
+struct Queue* history = NULL;
+
 int main(int argc, char **argv)
 {
-	struct Queue *history = (struct Queue*)malloc(sizeof(struct Queue));
+	if(!history) {
+		history = (struct Queue*)malloc(sizeof(struct Queue));
+	}
 	history->size = 0;
+	int functionNo;
 
 	printf("Enter username: ");
 	char* username = getCommand();
@@ -27,13 +32,11 @@ int main(int argc, char **argv)
 
 		recordHistory(history, command);
 
-		displayHistory(history);
-
 		parsedCommand = parseCommand(command);
 
-		/*if (checkIfBuiltIn(parsedCommand)) {
-			executeShellBuiltIn(parsedCommand);
-		} else {
+		if ( (functionNo = checkIfShellBuiltIn(parsedCommand[0])) != -1) {
+			shellBuiltIns[functionNo](parsedCommand);
+		} /*else {
 			childPid = fork();
 			if (childPid == 0) {
 				execvp(parsedCommand);
