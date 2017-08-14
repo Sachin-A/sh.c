@@ -1,16 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
+#include <unistd.h>
 #include "utility.h"
 
 struct Queue* history = NULL;
+struct Queue* backgroundJobs = NULL;
 
 int main(int argc, char **argv)
 {
 	if(!history) {
 		history = (struct Queue*)malloc(sizeof(struct Queue));
 	}
+	if(!backgroundJobs) {
+		backgroundJobs = (struct Queue*)malloc(sizeof(struct Queue));
+	}
 	history->size = 0;
+	backgroundJobs->size = 0;
 	int functionNo;
 
 	printf("Enter username: ");
@@ -23,31 +30,32 @@ int main(int argc, char **argv)
 
 	while (1) {
 
-		int childPid;
+		int childPid, status;
 		char *command, **parsedCommand;
 
 		displayPrompt(username, hostname);
-
 		command = getCommand();
-
-		recordHistory(history, command);
+		record(history, command);
 
 		parsedCommand = parseCommand(command);
 
 		if ( (functionNo = checkIfShellBuiltIn(parsedCommand[0])) != -1) {
 			shellBuiltIns[functionNo](parsedCommand);
-		} /*else {
+		} else {
 			childPid = fork();
 			if (childPid == 0) {
-				execvp(parsedCommand);
+				if (checkIfBackgroundJob(parsedCommand) == 0) {
+					setpgid(0, 0);
+				}
+				execvp(parsedCommand[0], parsedCommand);
 			} else {
-				if (checkIfBackgroundJob(parsedCommand)) {
-					recordBackgroundJob(parsedCommand);
+				if (checkIfBackgroundJob(parsedCommand) == 0) {
+					record(backgroundJobs, command);
 				} else {
-					waitpid(childPid);
+					waitpid(childPid, &status, WUNTRACED);
 				}
 			}
-		}*/
+		}
 	}
 
 	return EXIT_SUCCESS;

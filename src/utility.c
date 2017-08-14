@@ -66,7 +66,9 @@ char **parseCommand(char *command) {
 
 	size_t bufferSize = 64, unitSize = bufferSize;
 	char **tokens = malloc(bufferSize * sizeof(char*));
-	char *token = strtok(command, DELIMITERS);
+	char *temp = malloc(strlen(command) + 1);
+	strcpy(temp, command);
+	char *token = strtok(temp, DELIMITERS);
 	int tokenNumber = 0;
 
 	while(token != NULL) {
@@ -86,7 +88,7 @@ char **parseCommand(char *command) {
 	return tokens;
 }
 
-void enqueue(struct Queue *history, char *command) {
+void enqueue(struct Queue *list, char *command) {
 	struct Node* t = (struct Node*)malloc(sizeof(struct Node));
 	t->next = NULL;
 	t->command = malloc(strlen(command) + 1);
@@ -94,45 +96,63 @@ void enqueue(struct Queue *history, char *command) {
 	strcpy(t->command, command);
 	t->command[strlen(t->command) - 1] = '\0';
 
-	if(history->rear == NULL) {
-		history->front = history->rear = t;
+	if(list->rear == NULL) {
+		list->front = list->rear = t;
 		return;
 	}
 
-	history->rear->next = t;
-	history->rear = t;
-	history->size++;
+	list->rear->next = t;
+	list->rear = t;
+	list->size++;
 }
 
-void dequeue(struct Queue *history) {
-	struct Node *t = history->front;
+void dequeue(struct Queue *list) {
+	struct Node *t = list->front;
 
 	if(t == NULL) {
-		printf("There is nothing to show in history!\n");
+		printf("There is nothing to show!\n");
 		return;
 	}
 	else if(t->next != NULL) {
 		t = t->next;
-		free(history->front);
-		history->front = t;
+		free(list->front);
+		list->front = t;
 	}
 	else {
-		free(history->front);
-		history->front = NULL;
-		history->rear = NULL;
+		free(list->front);
+		list->front = NULL;
+		list->rear = NULL;
 	}
-	history->size--;
+	list->size--;
 }
 
-int displayHistory(char** parseCommand) {
+int displayHistory(char** parsedCommand) {
 
-	struct Node* iterator = history->front;
+	struct Node* iterator;
+	struct Node* rear;
+	bool bg = false;
+
+	for(int i = 0; parsedCommand[i] != '\0'; i++) {
+		if(strcmp(parsedCommand[i],"bg") == 0) {
+			bg = true;
+			break;
+		}
+	}
+	if(bg == true) {
+		iterator = backgroundJobs->front;
+		rear = backgroundJobs->rear;
+		printf("Background Jobs\n");
+
+	}
+	else {
+		iterator = history->front;
+		rear = history->rear;
+		printf("History\n");
+	}
 	int commandNum = 0;
 
-	printf("History\n");
-
-	if(iterator == NULL && history->rear == NULL) {
-		printf("There is nothing to show in history!");
+	if(iterator == NULL && rear == NULL) {
+		printf("There is nothing to show!\n");
 		return EXIT_FAILURE;
 	}
 	while(iterator != NULL) {
@@ -143,13 +163,13 @@ int displayHistory(char** parseCommand) {
 	return EXIT_SUCCESS;
 }
 
-void recordHistory(struct Queue *history, char *command) {
-	if(history->size == 5) {
-		dequeue(history);
-		enqueue(history, command);
+void record(struct Queue *list, char *command) {
+	if(list->size == 5) {
+		dequeue(list);
+		enqueue(list, command);
 	}
 	else {
-		enqueue(history, command);
+		enqueue(list, command);
 	}
 }
 
@@ -160,4 +180,15 @@ int checkIfShellBuiltIn(char* cmd) {
 		}
 	}
 	return -1;
+}
+
+int checkIfBackgroundJob(char** parsedCommand) {
+	int i;
+	for(i = 0; parsedCommand[i] != '\0'; i++) ;
+	if (strcmp(parsedCommand[i-1],"&") == 0) {
+		return EXIT_SUCCESS;
+	}
+	else {
+		return EXIT_FAILURE;
+	}
 }
