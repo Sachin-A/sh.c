@@ -10,6 +10,9 @@
 				'src/sh.c',
 				'src/utility.c',
 			],
+			'cflags': [
+				'-std=gnu99',
+			],
 		},
 	],
 }
